@@ -6,10 +6,13 @@
 package Servlets;
 
 import entidad.Categoria;
+import entidad.Copia;
 import entidad.Desarrollador;
+import entidad.Formato;
+import entidad.Juego;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -20,18 +23,15 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 
 /**
  *
  * @author kil_5
  */
-@WebServlet(name = "juegos", urlPatterns = {"/juegos"})
-public class juegos extends HttpServlet {
+@WebServlet(name = "agregarJuego", urlPatterns = {"/agregarJuego"})
+public class agregarJuego extends HttpServlet {
 
     @PersistenceContext(unitName = "Final1PU")
     private EntityManager em;
@@ -49,55 +49,46 @@ public class juegos extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
         try {
             utx.begin();
         } catch (NotSupportedException | SystemException ex) {
-            Logger.getLogger(juegos.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(agregarJuego.class.getName()).log(Level.SEVERE, null, ex);
         }
-        List<Categoria> catLista = em.createNamedQuery("Categoria.findAll", Categoria.class).getResultList();
-        List<Desarrollador> desLista = em.createNamedQuery("Desarrollador.findAll", Desarrollador.class).getResultList();
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Ingresar juego</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h4>Bienvenido al agregador de juegos.</h4>\n");
-            out.println("<form name=\"juego\" action=\"agregarJuego\" method=\"POST\">\n");
-            out.println("<br>Nombre del juego  \n");
-            out.println("<input type=\"text\" name=\"juegoNombre\" value=\"Nombre...\" /><br><br>\n");
-            out.println("Categoria:<br>\n");
-            for (Categoria categoria : catLista) {
-                out.println("<input type=\"checkbox\" name=\"genero\" value=\"" + categoria.getNombreCategoria() + "\"> " + categoria.getNombreCategoria() + "<br>");
-            }
-            out.println("<br>Desarrolladora<br>\n");
-            out.println("<select name=\"desarrolladora\">");
-            for (Desarrollador desarrollador : desLista) {
-                out.println("<option value=\"" + desarrollador.getNombreDesarrollador() + "\"> " + desarrollador.getNombreDesarrollador() + "</option>");
-            }
-            out.println("</select><br><br>");
-            out.println("Plataforma<br>\n");
-            out.println("<input type=\"checkbox\" name=\"plataforma\" value=\"PC\" />PC<br>\n");
-            out.println("<input type=\"checkbox\" name=\"plataforma\" value=\"Play station 4\" />Play station 4<br>\n");
-            out.println("<input type=\"checkbox\" name=\"plataforma\" value=\"Play station 3\" />Play station 3<br>\n");
-            out.println("<input type=\"checkbox\" name=\"plataforma\" value=\"Xbox one\" />Xbox one<br>\n");
-            out.println("<input type=\"checkbox\" name=\"plataforma\" value=\"Xbox 360\" />Xbox 360<br>\n");
-            out.println("<input type=\"checkbox\" name=\"plataforma\" value=\"Nintendo Switch\" />Nintendo switch<br><br>");
-            out.println("<input type=\"submit\" value=\"Enviar\">");
-            out.println("</form><br><br>");
-            out.println("<form name=\"volver\" action=\"adminJuegos.html\" method=\"POST\">\n");
-            out.println("<input type=\"submit\" value=\"Volver\" name=\"botVolver\" />\n");
-            out.println("</form>");
-            out.println("</body>");
-            out.println("</html>");
+        String nombre = request.getParameter("juegoNombre");
+        String desarrolladora = request.getParameter("desarrolladora");
+        String[] plataformas = request.getParameterValues("plataforma");
+        String[] generos = request.getParameterValues("genero");
+        Juego nuevoJuego = new Juego(em.createNamedQuery("Juego.findAll").getResultList().size() + 1, nombre);
+        nuevoJuego.setCategoriaCollection(new ArrayList<>());
+        nuevoJuego.setCopiaCollection(new ArrayList<>());
+        Desarrollador desarrolladoraNueva = em.createNamedQuery("Desarrollador.findByNombreDesarrollador", Desarrollador.class).setParameter("nombreDesarrollador", desarrolladora).getSingleResult();
+        nuevoJuego.setDesarrolladoridDesarrollador(desarrolladoraNueva);
+        em.persist(nuevoJuego);
+        for (String categoria : generos) {
+            Categoria introducir = em.createNamedQuery("Categoria.findByNombreCategoria", Categoria.class).setParameter("nombreCategoria", categoria).getSingleResult();
+            nuevoJuego.getCategoriaCollection().add(introducir);
+        }
+        for (String formato : plataformas) {
+            Copia copia = new Copia(em.createNamedQuery("Copia.findAll").getResultList().size() + 1);
+            copia.setFormatoCollection(new ArrayList<>());
+            System.out.println(formato);
+            Formato formatoAdd = em.createNamedQuery("Formato.findByNombreFormato", Formato.class).setParameter("nombreFormato", formato).getSingleResult();
+            copia.getFormatoCollection().add(formatoAdd);
+            formatoAdd.getCopiaCollection().add(copia);
+            copia.setJuegoidJuego(nuevoJuego);
+            em.persist(copia);
+            nuevoJuego.getCopiaCollection().add(copia);
         }
         try {
             utx.commit();
-        } catch (Exception ex) {
-            Logger.getLogger(juegos.class.getName()).log(Level.SEVERE, null, ex);
+            response.sendRedirect("adminJuegos.html");
+        } catch (Exception e) {
+            try {
+                utx.rollback();
+                response.sendRedirect("juegos");
+            } catch (Exception ex) {
+                Logger.getLogger(agregarJuego.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
@@ -150,4 +141,5 @@ public class juegos extends HttpServlet {
             throw new RuntimeException(e);
         }
     }
+
 }
