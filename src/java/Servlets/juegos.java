@@ -63,6 +63,8 @@ public class juegos extends HttpServlet {
             out.println("<html>");
             out.println("<head>");
             out.println("<title>Ingresar juego</title>");
+            out.println("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
+            out.println("<link href=\"css/vistaJuegos.css\" rel=\"stylesheet\" type=\"text/css\" />");
             out.println("</head>");
             out.println("<body>");
             out.println("<h4>Bienvenido al agregador de juegos.</h4>\n");

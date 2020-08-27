@@ -50,33 +50,43 @@ public class verJuegos extends HttpServlet {
         } catch (Exception ex) {
             Logger.getLogger(agregarDesarrolladora.class.getName()).log(Level.SEVERE, null, ex);
         }
-        List<Juego> mostrarJuego = em.createNamedQuery("Juego.findAll",Juego.class).getResultList();
-        
+        List<Juego> mostrarJuego = em.createNamedQuery("Juego.findAll", Juego.class).getResultList();
+
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Juegos disponibles</title>");            
+            out.println("<title>Juegos disponibles</title>");
+            out.println("<link href=\"css/vistaJuegos.css\" rel=\"stylesheet\" type=\"text/css\" />");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h5>Bienvenido a la seleccion de juegos</h5><br><br>");
-            for(Juego juego:mostrarJuego){
-                Collection<Copia> mostrarCopia= juego.getCopiaCollection();
-                out.println("Nombre: "+juego.getNombreJuego()+"<br>\n");
-                out.println("Desarrollado por: "+juego.getDesarrolladoridDesarrollador().getNombreDesarrollador()+"<br><\n");
+            out.println("<div>");
+            out.println("<h1>Bienvenido a la seleccion de juegos</h1>");
+            out.println("</div><br><br>\n");
+            for (Juego juego : mostrarJuego) {
+                out.println("<div style =\"height: "+mostrarJuego.size()*25+"\" >\n");
+                Collection<Copia> mostrarCopia = juego.getCopiaCollection();
+                out.println("Nombre: " + juego.getNombreJuego() + "<br>\n");
+                out.println("Desarrollado por: " + juego.getDesarrolladoridDesarrollador().getNombreDesarrollador() + "<br>\n");
                 out.println("Categorias a las que pertenece: ");
-                for(Categoria categoria: juego.getCategoriaCollection()){
-                    out.println(categoria.getNombreCategoria()+", ");
+                for (Categoria categoria : juego.getCategoriaCollection()) {
+                    out.println(categoria.getNombreCategoria() + ", ");
                 }
-                out.println("<br>Formatos disponibles: ");
-                for(Copia copia:mostrarCopia){
-                    for(Formato formato:copia.getFormatoCollection()){
-                        out.println(formato.getNombreFormato()+", ");
+                out.println("\n<br>Formatos disponibles: ");
+                for (Copia copia : mostrarCopia) {
+                    for (Formato formato : copia.getFormatoCollection()) {
+                        out.println(formato.getNombreFormato() + ", ");
                     }
                 }
+                out.println("</div>\n");
                 out.println("<br><br>");
             }
+            out.println("<div>");
+            out.println("<form name=\"volver\" action=\"menuPrincipal.html\" method=\"POST\">\n");
+            out.println("<input type=\"submit\" value=\"Volver\" name=\"botVolver\" />\n");
+            out.println("</form>");
+            out.println("</div>\n");
             out.println("</body>");
             out.println("</html>");
         }
