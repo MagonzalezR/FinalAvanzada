@@ -1,0 +1,38 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 26/08/2020, 05:13:07 PM
+    Author     : kil_5
+*/
+body{
+    background-color: #cc99ff;
+    
+}
+div{
+    position: relative;
+    margin: auto;
+    width: 400px;
+    border: 3px solid #73AD21;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 25px;
+    text-align: center;
+}
+h1{
+    font-family: "Times New Roman", Times, serif;
+    font-size: 25px;
+}
+input[type=button], input[type=submit], input[type=reset]{
+    background-color: #ffccff;
+    border: none;
+    color: #330033;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 15px;
+    margin: auto;
+    cursor: pointer;
+}
